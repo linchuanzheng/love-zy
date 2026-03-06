@@ -1,0 +1,8 @@
+{
+  "name": "love-photo-album",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@netlify/blobs": "^6.0.0"
+  }
+}

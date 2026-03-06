@@ -1,0 +1,9 @@
+[build]
+  functions = "netlify/functions"
+  publish = "."
+
+# 将所有 /api/* 的请求转发到对应的函数
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200

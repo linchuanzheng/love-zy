@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>💕 ZLC & ZY 爱情相册</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(145deg, #fff5f7 0%, #ffe4e8 100%);
+            color: #b13e5c;
+            padding: 16px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #d45e7a, #b13e5c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .header h1 span {
+            font-size: 2.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #c45d7a;
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(4px);
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 40px;
+            box-shadow: 0 2px 8px rgba(209, 86, 122, 0.15);
+            margin-top: 4px;
+        }
+
+        .storage-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 30px;
+            padding: 12px 18px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 12px rgba(209, 86, 122, 0.2);
+            border: 1px solid rgba(255,255,255,0.8);
+        }
+
+        .storage-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .storage-icon {
+            font-size: 1.6rem;
+        }
+
+        .storage-info {
+            font-weight: 500;
+        }
+
+        .storage-used {
+            font-size: 0.9rem;
+            color: #b13e5c;
+        }
+
+        .storage-bar {
+            width: 100px;
+            height: 8px;
+            background: #fbc1cc;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .storage-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff8aa8, #ff5e8b);
+            border-radius: 20px;
+            width: 0%;
+        }
+
+        .storage-number {
+            font-weight: 600;
+            color: #b13e5c;
+            background: white;
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+        }
+
+        .upload-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 20px;
+            box-shadow: 0 8px 20px rgba(209, 86, 122, 0.15);
+            margin-bottom: 24px;
+            border: 1px solid rgba(255,255,255,0.9);
+        }
+
+        .upload-area {
+            border: 2px dashed #ffb6c1;
+            border-radius: 24px;
+            padding: 24px 12px;
+            text-align: center;
+            transition: all 0.2s;
+            background: #fff9fa;
+        }
+
+        .upload-area.active {
+            border-color: #ff5e8b;
+            background: #fff0f3;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-label {
+            background: linear-gradient(145deg, #ff8aa8, #ff5e8b);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 40px;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 12px;
+            box-shadow: 0 6px 12px rgba(255, 94, 139, 0.3);
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .file-label:active {
+            transform: scale(0.96);
+            box-shadow: 0 2px 6px rgba(255, 94, 139, 0.4);
+        }
+
+        .file-name {
+            margin-top: 12px;
+            font-size: 0.9rem;
+            color: #b13e5c;
+            word-break: break-all;
+        }
+
+        .upload-progress {
+            margin-top: 16px;
+            height: 8px;
+            background: #fbc1cc;
+            border-radius: 10px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ff8aa8, #ff5e8b);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* 照片网格 */
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .photo-item {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(209, 86, 122, 0.15);
+            transition: transform 0.1s;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #ffe2e8;
+        }
+
+        .photo-item:active {
+            transform: scale(0.97);
+        }
+
+        .thumbnail {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            background: #ffe2e8;
+            display: block;
+        }
+
+        .file-info {
+            padding: 10px;
+            font-size: 0.75rem;
+            border-top: 1px solid #ffe2e8;
+            background: #fff9fa;
+        }
+
+        .file-name {
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 4px;
+            color: #b13e5c;
+        }
+
+        .file-meta {
+            color: #d9738b;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.7rem;
+        }
+
+        .download-btn {
+            display: block;
+            text-align: center;
+            background: #ffe2e8;
+            color: #b13e5c;
+            text-decoration: none;
+            padding: 8px 0;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .download-btn:active {
+            background: #ffcad4;
+        }
+
+        /* 分页控件 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 30px 0 20px;
+        }
+
+        .pagination button {
+            background: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-weight: 600;
+            color: #b13e5c;
+            box-shadow: 0 2px 8px rgba(209,86,122,0.2);
+            cursor: pointer;
+            transition: all 0.1s;
+            font-size: 1rem;
+            min-width: 90px;
+        }
+
+        .pagination button:active {
+            transform: scale(0.95);
+            background: #ffe2e8;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .page-info {
+            font-weight: 600;
+            color: #b13e5c;
+            background: rgba(255,255,255,0.6);
+            padding: 6px 16px;
+            border-radius: 30px;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 40px;
+            color: #b13e5c;
+            margin-top: 20px;
+            border: 1px solid rgba(255,255,255,0.9);
+        }
+
+        .empty-state .heart {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .empty-state p {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+
+        .empty-state small {
+            color: #d9738b;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px 0;
+            color: #b13e5c;
+        }
+
+        .error-message {
+            text-align: center;
+            padding: 30px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 40px;
+            color: #b13e5c;
+            margin-top: 20px;
+        }
+
+        .retry-btn {
+            background: #ff8aa8;
+            border: none;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 40px;
+            margin-top: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #d9738b;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <span>💕</span> ZLC & ZY <span>💕</span>
+            </h1>
+            <div class="subtitle">✨ 我们的爱情回忆 ✨</div>
+        </div>
+
+        <div class="storage-card" id="storageCard">
+            <div class="storage-left">
+                <span class="storage-icon">📦</span>
+                <div class="storage-info">
+                    <div class="storage-used" id="storageUsedText">计算中...</div>
+                    <div class="storage-bar">
+                        <div class="storage-bar-fill" id="storageBarFill" style="width:0%"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="storage-number" id="storageNumber">0 MB / 1 GB</div>
+        </div>
+
+        <div class="upload-card">
+            <div class="upload-area" id="dropZone">
+                <span class="upload-icon">📸</span>
+                <p>点击或拖拽照片，存入回忆</p>
+                <input type="file" id="fileInput" class="file-input" accept="image/*" capture="environment" multiple>
+                <label for="fileInput" class="file-label" id="selectBtn">❤️ 选择照片 ❤️</label>
+                <div class="file-name" id="selectedFileName"></div>
+            </div>
+            <div class="upload-progress" id="progressContainer">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
+
+        <!-- 照片列表区域 -->
+        <div id="photoList" class="photo-grid"></div>
+
+        <!-- 分页控件 -->
+        <div class="pagination" id="pagination" style="display: none;">
+            <button id="prevPage" disabled>← 上一页</button>
+            <span class="page-info" id="pageInfo">1/1</span>
+            <button id="nextPage" disabled>下一页 →</button>
+        </div>
+
+        <div id="loading" class="loading">加载中，请稍候...</div>
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <span class="heart">❤️</span>
+            <p>还没有爱情回忆</p>
+            <p>快上传第一张属于我们的照片吧~</p>
+            <small>点击上方「选择照片」开始</small>
+        </div>
+        <div id="errorState" class="error-message" style="display: none;">
+            <p id="errorText">😢 加载失败，网络开小差了</p>
+            <button class="retry-btn" id="retryBtn">重试</button>
+        </div>
+
+        <footer>
+            ⚡ 存储于 Netlify · 永远珍藏我们的回忆
+        </footer>
+    </div>
+
+    <script>
+        // DOM 元素
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const selectedFileName = document.getElementById('selectedFileName');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const photoListDiv = document.getElementById('photoList');
+        const loadingDiv = document.getElementById('loading');
+        const emptyStateDiv = document.getElementById('emptyState');
+        const errorStateDiv = document.getElementById('errorState');
+        const errorText = document.getElementById('errorText');
+        const retryBtn = document.getElementById('retryBtn');
+        const storageUsedText = document.getElementById('storageUsedText');
+        const storageBarFill = document.getElementById('storageBarFill');
+        const storageNumber = document.getElementById('storageNumber');
+        const paginationDiv = document.getElementById('pagination');
+        const prevBtn = document.getElementById('prevPage');
+        const nextBtn = document.getElementById('nextPage');
+        const pageInfo = document.getElementById('pageInfo');
+
+        const MAX_STORAGE = 1 * 1024 * 1024 * 1024; // 1GB
+        const PAGE_SIZE = 12; // 每页显示12张照片
+        let allFiles = [];     // 存储所有文件数据
+        let currentPage = 1;   // 当前页码
+        let totalPages = 1;
+
+        // 格式化字节
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+
+        // 更新存储显示
+        function updateStorage(files) {
+            let totalBytes = 0;
+            files.forEach(file => {
+                totalBytes += file.metadata?.size || 0;
+            });
+            const used = totalBytes;
+            const percent = Math.min(100, (used / MAX_STORAGE) * 100);
+            storageBarFill.style.width = percent + '%';
+            storageUsedText.innerText = `已用 ${formatBytes(used)}`;
+            storageNumber.innerText = `${formatBytes(used, 1)} / 1 GB`;
+        }
+
+        // 渲染当前页的照片
+        function renderCurrentPage() {
+            if (!allFiles.length) {
+                photoListDiv.innerHTML = '';
+                paginationDiv.style.display = 'none';
+                return;
+            }
+
+            totalPages = Math.ceil(allFiles.length / PAGE_SIZE);
+            if (currentPage > totalPages) currentPage = totalPages;
+            const start = (currentPage - 1) * PAGE_SIZE;
+            const end = Math.min(start + PAGE_SIZE, allFiles.length);
+            const pageFiles = allFiles.slice(start, end);
+
+            let html = '';
+            pageFiles.forEach(file => {
+                const key = file.key;
+                const meta = file.metadata || {};
+                const contentType = meta.contentType || '';
+                const size = meta.size || 0;
+                const lastMod = meta.lastModified ? new Date(meta.lastModified).toLocaleString() : '未知';
+                const sizeStr = formatBytes(size, 1);
+                const isImage = contentType.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|heic)$/i.test(key);
+
+                let thumbnailHtml = '';
+                if (isImage) {
+                    thumbnailHtml = `<img class="thumbnail" src="/api/file?key=${encodeURIComponent(key)}" alt="${key}" loading="lazy">`;
+                } else {
+                    thumbnailHtml = `<div class="thumbnail" style="display: flex; align-items: center; justify-content: center; background: #ffd9e2; color: #b13e5c; font-size: 2rem;">📄</div>`;
+                }
+
+                html += `
+                    <div class="photo-item">
+                        ${thumbnailHtml}
+                        <div class="file-info">
+                            <div class="file-name" title="${key}">${key}</div>
+                            <div class="file-meta">
+                                <span>${sizeStr}</span>
+                                <span>${new Date(lastMod).toLocaleDateString()}</span>
+                            </div>
+                            <a href="/api/file?key=${encodeURIComponent(key)}" class="download-btn" download>下载回忆</a>
+                        </div>
+                    </div>
+                `;
+            });
+            photoListDiv.innerHTML = html;
+
+            // 更新分页控件
+            pageInfo.innerText = `${currentPage} / ${totalPages}`;
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+            paginationDiv.style.display = 'flex';
+        }
+
+        // 加载所有照片
+        async function loadPhotos() {
+            loadingDiv.style.display = 'block';
+            emptyStateDiv.style.display = 'none';
+            errorStateDiv.style.display = 'none';
+            photoListDiv.innerHTML = '';
+            paginationDiv.style.display = 'none';
+
+            try {
+                const res = await fetch('/api/list');
+                if (!res.ok) {
+                    const text = await res.text();
+                    throw new Error(`服务器返回 ${res.status}: ${text}`);
+                }
+                const files = await res.json();
+
+                // 按最后修改时间倒序排列（新上传的在前面）
+                files.sort((a, b) => {
+                    const timeA = a.metadata?.lastModified ? new Date(a.metadata.lastModified).getTime() : 0;
+                    const timeB = b.metadata?.lastModified ? new Date(b.metadata.lastModified).getTime() : 0;
+                    return timeB - timeA;
+                });
+
+                allFiles = files; // 保存到全局
+                currentPage = 1;   // 重置为第一页
+
+                loadingDiv.style.display = 'none';
+                updateStorage(files);
+
+                if (files.length === 0) {
+                    emptyStateDiv.style.display = 'block';
+                    paginationDiv.style.display = 'none';
+                    return;
+                }
+
+                renderCurrentPage();
+
+            } catch (err) {
+                loadingDiv.style.display = 'none';
+                errorText.innerText = `😢 加载失败：${err.message}`;
+                errorStateDiv.style.display = 'block';
+                console.error('加载失败:', err);
+            }
+        }
+
+        // 上传单个文件
+        async function uploadFile(file) {
+            if (!file) return;
+
+            selectedFileName.textContent = `已选择：${file.name}`;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            progressContainer.style.display = 'block';
+            progressBar.style.width = '0%';
+
+            let fakeProgress = 0;
+            const interval = setInterval(() => {
+                if (fakeProgress < 90) {
+                    fakeProgress += 10;
+                    progressBar.style.width = fakeProgress + '%';
+                }
+            }, 200);
+
+            try {
+                const res = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                clearInterval(interval);
+
+                if (!res.ok) {
+                    const err = await res.text();
+                    throw new Error(err);
+                }
+
+                const result = await res.json();
+                progressBar.style.width = '100%';
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                    progressBar.style.width = '0%';
+                    selectedFileName.textContent = '';
+                }, 500);
+
+                // 重新加载列表
+                loadPhotos();
+            } catch (err) {
+                clearInterval(interval);
+                progressContainer.style.display = 'none';
+                selectedFileName.textContent = `上传失败：${err.message}`;
+                console.error(err);
+            }
+        }
+
+        // 事件监听
+        fileInput.addEventListener('change', (e) => {
+            const files = e.target.files;
+            if (files.length > 0) {
+                uploadFile(files[0]);
+            }
+            fileInput.value = '';
+        });
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('active');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('active');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('active');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                uploadFile(files[0]);
+            }
+        });
+
+        // 分页按钮
+        prevBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderCurrentPage();
+                // 滚动到顶部，方便查看新页面
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderCurrentPage();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+
+        // 重试按钮
+        retryBtn.addEventListener('click', loadPhotos);
+
+        // 启动时加载照片
+        loadPhotos();
+    </script>
+</body>
+</html>
