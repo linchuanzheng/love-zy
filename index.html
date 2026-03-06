@@ -507,7 +507,7 @@
                 const contentType = meta.contentType || '';
                 const size = meta.size || 0;
                 const lastMod = meta.lastModified ? new Date(meta.lastModified).toLocaleString() : '未知';
-                const sizeStr = formatBytes(size, 1);
+                const sizeStr = size > 0 ? formatBytes(size, 1) : '?';
                 const isImage = contentType.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|heic)$/i.test(key);
 
                 let thumbnailHtml = '';

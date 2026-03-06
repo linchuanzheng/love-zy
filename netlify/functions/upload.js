@@ -15,7 +15,6 @@ export default async (req) => {
     const filename = file.name;
     const fileBuffer = await file.arrayBuffer();
 
-    // 获取存储空间（名称可自定义）
     const store = getStore('love-photos');
     await store.set(filename, new Uint8Array(fileBuffer), {
       metadata: {
@@ -29,6 +28,7 @@ export default async (req) => {
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
+    console.error('Upload error:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }

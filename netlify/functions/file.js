@@ -19,17 +19,27 @@ export default async (req) => {
     }
 
     const data = await blob.arrayBuffer();
-    const contentType = blob.metadata?.contentType || 'application/octet-stream';
-    const size = blob.metadata?.size || data.byteLength;
+    // 从 blob.metadata 中获取类型，如果没有则根据文件名猜测
+    let contentType = blob.metadata?.contentType;
+    if (!contentType) {
+      const ext = key.split('.').pop().toLowerCase();
+      if (['jpg', 'jpeg'].includes(ext)) contentType = 'image/jpeg';
+      else if (ext === 'png') contentType = 'image/png';
+      else if (ext === 'gif') contentType = 'image/gif';
+      else if (ext === 'webp') contentType = 'image/webp';
+      else contentType = 'application/octet-stream';
+    }
 
     return new Response(data, {
       headers: {
         'Content-Type': contentType,
-        'Content-Length': size,
-        'Cache-Control': 'public, max-age=86400'
+        'Content-Length': data.byteLength,
+        'Cache-Control': 'public, max-age=86400',
+        'Content-Disposition': `inline; filename="${encodeURIComponent(key)}"`
       }
     });
   } catch (error) {
+    console.error('File error:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
