@@ -9,37 +9,37 @@ export default async (req) => {
     const url = new URL(req.url);
     const key = url.searchParams.get('key');
     if (!key) {
-      return new Response('缺少 key 参数', { status: 400 });
+      return new Response(JSON.stringify({ error: '缺少 key 参数' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
     const store = getStore('love-photos');
     const blob = await store.get(key);
     if (!blob) {
-      return new Response('文件不存在', { status: 404 });
+      console.error(`文件不存在: ${key}`);
+      return new Response(JSON.stringify({ error: '文件不存在' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
     const data = await blob.arrayBuffer();
-    // 从 blob.metadata 中获取类型，如果没有则根据文件名猜测
-    let contentType = blob.metadata?.contentType;
-    if (!contentType) {
-      const ext = key.split('.').pop().toLowerCase();
-      if (['jpg', 'jpeg'].includes(ext)) contentType = 'image/jpeg';
-      else if (ext === 'png') contentType = 'image/png';
-      else if (ext === 'gif') contentType = 'image/gif';
-      else if (ext === 'webp') contentType = 'image/webp';
-      else contentType = 'application/octet-stream';
-    }
+    const contentType = blob.metadata?.contentType || 'application/octet-stream';
+    const size = blob.metadata?.size || data.byteLength;
 
     return new Response(data, {
       headers: {
         'Content-Type': contentType,
-        'Content-Length': data.byteLength,
+        'Content-Length': size,
         'Cache-Control': 'public, max-age=86400',
+        // 使浏览器直接显示图片而不是下载（但保留下载按钮触发的下载）
         'Content-Disposition': `inline; filename="${encodeURIComponent(key)}"`
       }
     });
   } catch (error) {
-    console.error('File error:', error);
+    console.error('file.js 错误:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }

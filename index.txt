@@ -400,7 +400,7 @@
             <div class="upload-area" id="dropZone">
                 <span class="upload-icon">📸</span>
                 <p>点击或拖拽照片，存入回忆</p>
-                <input type="file" id="fileInput" class="file-input" accept="image/*" capture="environment" multiple>
+                <input type="file" id="fileInput" class="file-input" accept="image/*" multiple>
                 <label for="fileInput" class="file-label" id="selectBtn">❤️ 选择照片 ❤️</label>
                 <div class="file-name" id="selectedFileName"></div>
             </div>
