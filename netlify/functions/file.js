@@ -25,35 +25,50 @@ export default async (req) => {
       });
     }
 
-    // ----- 核心修改：处理不同类型的 blob -----
+    // 处理不同类型的 blob
     let data;
     let contentType = blob.metadata?.contentType || 'application/octet-stream';
-    
-    // 情况1：blob 是 Uint8Array (新上传的照片)
+
+    // 情况1：Uint8Array (新照片)
     if (blob instanceof Uint8Array) {
       data = blob.buffer;
     }
-    // 情况2：blob 是 ArrayBuffer
+    // 情况2：ArrayBuffer
     else if (blob instanceof ArrayBuffer) {
       data = blob;
     }
-    // 情况3：blob 有 arrayBuffer 方法 (@netlify/blobs 的标准返回)
+    // 情况3：有 arrayBuffer 方法 (标准 @netlify/blobs 返回)
     else if (typeof blob.arrayBuffer === 'function') {
       data = await blob.arrayBuffer();
       contentType = blob.metadata?.contentType || contentType;
     }
-    // 情况4：blob 是 String (旧照片可能以 Base64 或纯文本存储)
+    // 情况4：字符串 (旧照片)
     else if (typeof blob === 'string') {
-      // 假设字符串内容是 Base64 编码的图片数据
-      // 注意：如果存储的是原始文本，这里需要根据实际情况调整
-      const base64Data = blob.replace(/^data:image\/\w+;base64,/, '');
-      const binaryString = atob(base64Data);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
+      // 记录字符串前50个字符，以便判断格式
+      console.log(`[file] 字符串前50字符: ${blob.substring(0, 50)}`);
+
+      // 尝试作为 base64 解码
+      try {
+        // 去除可能的 data URL 前缀
+        const base64Data = blob.replace(/^data:image\/\w+;base64,/, '');
+        const binaryString = atob(base64Data);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        data = bytes.buffer;
+        console.log('[file] 成功作为 base64 解码');
+      } catch (e) {
+        // base64 解码失败，回退到原始二进制字符串处理
+        console.log('[file] base64 解码失败，尝试作为原始二进制字符串处理');
+        const bytes = new Uint8Array(blob.length);
+        for (let i = 0; i < blob.length; i++) {
+          bytes[i] = blob.charCodeAt(i) & 0xFF; // 取低8位，确保在0-255
+        }
+        data = bytes.buffer;
       }
-      data = bytes.buffer;
-      // 尝试从文件名推断 Content-Type
+
+      // 根据文件名设置内容类型
       const ext = key.split('.').pop().toLowerCase();
       if (['jpg', 'jpeg'].includes(ext)) contentType = 'image/jpeg';
       else if (ext === 'png') contentType = 'image/png';
