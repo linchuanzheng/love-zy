@@ -24,11 +24,13 @@ export default async (req) => {
       }
     });
 
+    console.log(`[upload] 成功: ${filename}, 大小: ${file.size}`);
+
     return new Response(JSON.stringify({ success: true, filename }), {
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
-    console.error('Upload error:', error);
+    console.error('[upload] 错误:', error.message, error.stack);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
