@@ -25,22 +25,46 @@ export default async (req) => {
       });
     }
 
-    // 处理 blob 数据，兼容不同格式
+    // ----- 核心修改：处理不同类型的 blob -----
     let data;
+    let contentType = blob.metadata?.contentType || 'application/octet-stream';
+    
+    // 情况1：blob 是 Uint8Array (新上传的照片)
     if (blob instanceof Uint8Array) {
       data = blob.buffer;
-    } else if (blob instanceof ArrayBuffer) {
+    }
+    // 情况2：blob 是 ArrayBuffer
+    else if (blob instanceof ArrayBuffer) {
       data = blob;
-    } else if (typeof blob.arrayBuffer === 'function') {
+    }
+    // 情况3：blob 有 arrayBuffer 方法 (@netlify/blobs 的标准返回)
+    else if (typeof blob.arrayBuffer === 'function') {
       data = await blob.arrayBuffer();
-    } else if (blob && typeof blob === 'object' && blob._data) {
-      data = blob._data;
-    } else {
-      throw new Error(`无法识别的 blob 类型: ${blob.constructor?.name}`);
+      contentType = blob.metadata?.contentType || contentType;
+    }
+    // 情况4：blob 是 String (旧照片可能以 Base64 或纯文本存储)
+    else if (typeof blob === 'string') {
+      // 假设字符串内容是 Base64 编码的图片数据
+      // 注意：如果存储的是原始文本，这里需要根据实际情况调整
+      const base64Data = blob.replace(/^data:image\/\w+;base64,/, '');
+      const binaryString = atob(base64Data);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      data = bytes.buffer;
+      // 尝试从文件名推断 Content-Type
+      const ext = key.split('.').pop().toLowerCase();
+      if (['jpg', 'jpeg'].includes(ext)) contentType = 'image/jpeg';
+      else if (ext === 'png') contentType = 'image/png';
+      else if (ext === 'gif') contentType = 'image/gif';
+      else if (ext === 'webp') contentType = 'image/webp';
+    }
+    else {
+      throw new Error(`无法处理的 blob 类型: ${blob.constructor?.name}`);
     }
 
-    const contentType = blob.metadata?.contentType || 'application/octet-stream';
-    const size = blob.metadata?.size || data.byteLength;
+    const size = data.byteLength;
 
     return new Response(data, {
       headers: {
